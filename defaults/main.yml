@@ -21,22 +21,73 @@ promtail_config_server:
 promtail_loki_server_url: http://127.0.0.1:3100
 promtail_config_clients:
   - url: "{{ promtail_loki_server_url }}/loki/api/v1/push"
+  
 
 promtail_positions_directory: /var/lib/promtail
 promtail_config_positions:
   filename: "{{ promtail_positions_directory }}/positions.yml"
 
-promtail_config_scrape_configs: []
-#  promtail_config_scrape_configs:
-#    - job_name: system
-#      entry_parser: raw
-#      static_configs:
-#      - targets:
-#          - localhost
-#        labels:
-#          job: varlogs
-#          host: {{ ansible_hostname }}
-#          __path__: /var/log/*log
+#promtail_config_scrape_configs_default: []
+promtail_config_scrape_configs_additional: []
+promtail_config_scrape_configs_default:
+  - job_name: varlogs
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: varlogs
+        hostname: "{{ ansible_hostname }}"
+        ip: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+        __path__: /var/log/{daemon.log,kern.log,syslog,messages,user.log,yum.log}
+  - job_name: secure_logs
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: varlogs
+        secure: true
+        hostname: "{{ ansible_hostname }}"
+        ip: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+        __path__: /var/log/{auth.log,secure}
+  - job_name: apt_logs
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: varlogs
+        apt: true
+        hostname: "{{ ansible_hostname }}"
+        ip: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+        __path__: /var/log/{apt/history.log,dpkg.log}
+  - job_name: yum_logs
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: varlogs
+        yum: true
+        hostname: "{{ ansible_hostname }}"
+        ip: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+        __path__: /var/log/yum.log
+  - job_name: iptables_drop_log
+    static_configs:
+    - targets:
+        - localhost
+      labels:
+        job: varlogs
+        iptables: drop
+        hostname: "{{ ansible_hostname }}"
+        ip: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+        __path__: /var/log/iptables/drop.log
+  - job_name: journald
+    journal:
+      labels:
+        job: systemd-journal
+        hostname: "{{ ansible_hostname }}"
+        ip: "{{ ansible_default_ipv4.address|default(ansible_all_ipv4_addresses[0]) }}"
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
 
 promtail_config_include_default_file_sd_config: True
 
