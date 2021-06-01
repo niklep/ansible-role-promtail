@@ -7,7 +7,7 @@ promtail_config_file: "{{ promtail_config_dir }}/promtail.yml"
 
 promtail_system_user: promtail
 promtail_system_group: "{{ promtail_system_user }}"
-promtail_user_additional_groups: "adm"
+promtail_user_additional_groups: "adm,systemd-journal"
 
 promtail_install_dir: /opt/promtail
 promtail_tmp_dir: /tmp
