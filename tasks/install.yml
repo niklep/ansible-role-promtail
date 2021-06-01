@@ -87,6 +87,17 @@
     dest: /usr/local/bin/promtail
     mode: 0755
 
+- name: Add read permisions for log files (RedHat)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    group: adm
+    mode: g+r
+  with_items:
+    - "/var/log/yum.log"
+    - "/var/log/secure"
+    - "/var/log/messages"
+  when: ansible_os_family == "RedHat"
+
 - name: Write config
   notify:
     - Restart promtail
