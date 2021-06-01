@@ -4,6 +4,7 @@
     name: unzip
     state: present
     update_cache: True
+  ignore_errors: yes
 
 - name: Create promtail group
   group:
@@ -64,6 +65,7 @@
     dest: "{{ promtail_tmp_dir }}/{{ promtail_version }}_promtail-linux-{{ go_arch }}.zip"
     force: True
     checksum: "sha256:{{ __promtail_checksum }}"
+    validate_certs: no
   when: not promtail_binary.stat.exists
 
 - name: Unpack promtail binaries
@@ -93,7 +95,7 @@
     dest: "{{ promtail_config_file }}"
     owner: root
     group: "{{ promtail_system_group }}"
-    mode: 0644
+    mode: 0640
 
 - name: Create systemd service unit
   notify:
